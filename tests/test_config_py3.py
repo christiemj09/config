@@ -2,9 +2,15 @@
 Test the config module.
 """
 
-from json.decoder import JSONDecodeError
-from tempfile import NamedTemporaryFile
+try:
+    # Python 3 imports
+    from json.decoder import JSONDecodeError
+    from tempfile import NamedTemporaryFile
+except ImportError:
+    pass
+
 import unittest
+import sys
 
 from config import from_config
 
@@ -140,7 +146,10 @@ class TestConfig(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    if sys.version_info[0] == 3:
+        unittest.main()
+    else:
+        sys.stderr.write("Skipping tests in tests/test_config_py3.py for Python 3\n")
 
         
         
