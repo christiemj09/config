@@ -3,12 +3,11 @@ Test the config module.
 """
 
 try:
-    # Python 3 imports
-    from json.decoder import JSONDecodeError
-    from tempfile import NamedTemporaryFile
+    from json.decoder import JSONDecodeError  # Python 2 throws ValueError instead
 except ImportError:
     pass
 
+from tempfile import NamedTemporaryFile
 import unittest
 import sys
 
@@ -91,8 +90,11 @@ class TestConfig(unittest.TestCase):
             return action
         return action_runner
 
-    def test_bad_file(self):
-        """Document running a function when the config file isn't JSON."""
+    def test_bad_file_py3(self):
+        """Document running a function when the config file isn't JSON in Python 3."""
+        if sys.version_info[0] != 3:
+            return
+        
         add = self.action_stager(add_function)
         
         # Empty file  
@@ -112,9 +114,37 @@ class TestConfig(unittest.TestCase):
             self.write(tmp, b'\xec')
             msg = "'utf-8' codec can't decode byte 0xec in position 0: unexpected end of data"
             self.assert_error(add(tmp.name), UnicodeError, msg)
+
+    def test_bad_file_py2(self):
+        """Document running a function when the config file isn't JSON in Python 2."""
+        if sys.version_info[0] != 2:
+            return
+        
+        add = self.action_stager(add_function)
+        
+        # Empty file  
+        with NamedTemporaryFile() as tmp:
+            self.write(tmp, b'')
+            msg = 'No JSON object could be decoded'
+            self.assert_error(add(tmp.name), ValueError, msg)
+        
+        # Nonempty text file
+        with NamedTemporaryFile() as tmp:        
+            self.write(tmp, b'This is well-formed text.')
+            msg = 'No JSON object could be decoded'
+            self.assert_error(add(tmp.name), ValueError, msg)
+        
+        # Binary data
+        with NamedTemporaryFile() as tmp:        
+            self.write(tmp, b'\xec')
+            msg = 'No JSON object could be decoded'
+            self.assert_error(add(tmp.name), ValueError, msg)
     
-    def test_typo(self):
-        """Document running a function when the JSON config file contains common typos."""
+    def test_typo_py3(self):
+        """Document running a function when the JSON config file contains common typos in Python 3."""
+        if sys.version_info[0] != 3:
+            return
+        
         add = self.action_stager(add_function)
         
         def test_on(tmp, expected_msg):
@@ -144,12 +174,43 @@ class TestConfig(unittest.TestCase):
             msg = "Expecting ',' delimiter: line 1 column 16 (char 15)"
             test_on(tmp, msg)
 
+    def test_typo_py2(self):
+        """Document running a function when the JSON config file contains common typos in Python 2."""
+        if sys.version_info[0] != 2:
+            return
+        
+        add = self.action_stager(add_function)
+        
+        def test_on(tmp, expected_msg):
+            self.assert_error(add(tmp.name), ValueError, expected_msg)
+        
+        # Missing quotes around property name
+        with NamedTemporaryFile() as tmp:
+            self.write(tmp, b'{"a": 1, b: 2}')
+            msg = 'Expecting property name: line 1 column 10 (char 9)'
+            test_on(tmp, msg)
+        
+        # Missing comma between properties
+        with NamedTemporaryFile() as tmp:
+            self.write(tmp, b'{"a": 1 "b": 2}')
+            msg = "Expecting , delimiter: line 1 column 9 (char 8)"
+            test_on(tmp, msg)
+        
+        # Missing colon after property name
+        with NamedTemporaryFile() as tmp:
+            self.write(tmp, b'{"a": 1, "b" 2}')
+            msg = "Expecting : delimiter: line 1 column 14 (char 13)"
+            test_on(tmp, msg)
+        
+        # Missing closing brace
+        with NamedTemporaryFile() as tmp:
+            self.write(tmp, b'{"a": 1, "b": 2')
+            msg = "Expecting object: line 1 column 15 (char 14)"
+            test_on(tmp, msg)
+
 
 if __name__ == '__main__':
-    if sys.version_info[0] == 3:
-        unittest.main()
-    else:
-        sys.stderr.write("Skipping tests in tests/test_config_py3.py for Python 3\n")
+    unittest.main()
 
         
         
