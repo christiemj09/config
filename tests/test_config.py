@@ -93,7 +93,7 @@ class TestConfig(unittest.TestCase):
     def test_bad_file_py3(self):
         """Document running a function when the config file isn't JSON in Python 3."""
         if sys.version_info[0] != 3:
-            return
+            raise self.skipTest('Test is for Python 3')
         
         add = self.action_stager(add_function)
         
@@ -118,7 +118,7 @@ class TestConfig(unittest.TestCase):
     def test_bad_file_py2(self):
         """Document running a function when the config file isn't JSON in Python 2."""
         if sys.version_info[0] != 2:
-            return
+            raise self.skipTest('Test is for Python 2')
         
         add = self.action_stager(add_function)
         
@@ -143,7 +143,7 @@ class TestConfig(unittest.TestCase):
     def test_typo_py3(self):
         """Document running a function when the JSON config file contains common typos in Python 3."""
         if sys.version_info[0] != 3:
-            return
+            raise self.skipTest('Test is for Python 3')
         
         add = self.action_stager(add_function)
         
@@ -177,7 +177,7 @@ class TestConfig(unittest.TestCase):
     def test_typo_py2(self):
         """Document running a function when the JSON config file contains common typos in Python 2."""
         if sys.version_info[0] != 2:
-            return
+            raise self.skipTest('Test is for Python 2')
         
         add = self.action_stager(add_function)
         
