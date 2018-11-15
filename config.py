@@ -11,7 +11,7 @@ def from_config(func):
     def decorator(filename):
         with open(filename, 'r') as file_in:
             config = json.load(file_in)
-	    return func(**config)
+        return func(**config)
     
     return decorator
 
