@@ -1,4 +1,4 @@
 language: python
 
 script:
-  - echo 'Hello, world!'
+  - python -m unittest
